@@ -1,5 +1,6 @@
 #include <iostream>
 #include <algorithm>
+#include <cctype>
 #include "library.h"
 
 using namespace std;
@@ -12,7 +13,7 @@ void Library::addBook(const Book& book) {
     books.push_back(make_unique<Book>(book));
 }
 
-// Remove book from library (avec confirmation)
+// Remove book from library (avec confirmation et messages cohérents)
 bool Library::removeBook(const string& isbn) {
     cout << "Confirmer la suppression du livre avec l'ISBN " << isbn << " (o/N) ? ";
     char confirm;
@@ -26,10 +27,10 @@ bool Library::removeBook(const string& isbn) {
         [&isbn](const unique_ptr<Book>& book) {
             return book->getISBN() == isbn;
         });
-
+    
     if (it != books.end()) {
-        cout << "✅ Livre supprimé avec succès.\n";
         books.erase(it);
+        cout << "✅ Livre supprimé avec succès.\n";
         return true;
     }
     cout << "❌ Aucun livre trouvé avec cet ISBN.\n";
@@ -42,7 +43,6 @@ Book* Library::findBookByISBN(const string& isbn) {
         [&isbn](const unique_ptr<Book>& book) {
             return book->getISBN() == isbn;
         });
-    
     return (it != books.end()) ? it->get() : nullptr;
 }
 
@@ -55,7 +55,6 @@ vector<Book*> Library::searchBooksByTitle(const string& title) {
     for (auto& book : books) {
         string bookTitle = book->getTitle();
         transform(bookTitle.begin(), bookTitle.end(), bookTitle.begin(), ::tolower);
-        
         if (bookTitle.find(lowerTitle) != string::npos) {
             results.push_back(book.get());
         }
@@ -72,7 +71,6 @@ vector<Book*> Library::searchBooksByAuthor(const string& author) {
     for (auto& book : books) {
         string bookAuthor = book->getAuthor();
         transform(bookAuthor.begin(), bookAuthor.end(), bookAuthor.begin(), ::tolower);
-        
         if (bookAuthor.find(lowerAuthor) != string::npos) {
             results.push_back(book.get());
         }
@@ -111,7 +109,6 @@ User* Library::findUserById(const string& userId) {
         [&userId](const unique_ptr<User>& user) {
             return user->getUserId() == userId;
         });
-    
     return (it != users.end()) ? it->get() : nullptr;
 }
 
@@ -140,7 +137,6 @@ bool Library::checkOutBook(const string& isbn, const string& userId) {
 // Return book
 bool Library::returnBook(const string& isbn) {
     Book* book = findBookByISBN(isbn);
-    
     if (book && !book->getAvailability()) {
         for (auto& user : users) {
             if (user->hasBorrowedBook(isbn)) {
@@ -160,7 +156,6 @@ void Library::displayAllBooks() {
         cout << "Aucun livre dans la bibliothèque.\n";
         return;
     }
-    
     cout << "\n=== TOUS LES LIVRES ===\n";
     for (size_t i = 0; i < books.size(); ++i) {
         cout << "\nLivre " << (i + 1) << " :\n";
@@ -172,12 +167,10 @@ void Library::displayAllBooks() {
 // Display available books
 void Library::displayAvailableBooks() {
     auto available = getAvailableBooks();
-    
     if (available.empty()) {
         cout << "Aucun livre disponible pour emprunt.\n";
         return;
     }
-    
     cout << "\n=== LIVRES DISPONIBLES ===\n";
     for (size_t i = 0; i < available.size(); ++i) {
         cout << "\nLivre " << (i + 1) << " :\n";
@@ -192,7 +185,6 @@ void Library::displayAllUsers() {
         cout << "Aucun utilisateur enregistré.\n";
         return;
     }
-    
     cout << "\n=== TOUS LES UTILISATEURS ===\n";
     for (size_t i = 0; i < users.size(); ++i) {
         cout << "\nUtilisateur " << (i + 1) << " :\n";
@@ -215,7 +207,7 @@ int Library::getCheckedOutBookCount() const {
     return getTotalBooks() - getAvailableBookCount();
 }
 
-// === NEW FEATURE: Sort books ===
+// === NEW FEATURE: Sort books and show result ===
 void Library::sortBooks() {
     if (books.empty()) {
         cout << "Aucun livre à trier.\n";
@@ -235,14 +227,18 @@ void Library::sortBooks() {
              [](const unique_ptr<Book>& a, const unique_ptr<Book>& b) {
                  return a->getTitle() < b->getTitle();
              });
-        cout << "✅ Livres triés par titre avec succès.\n";
+        cout << "✅ Livres triés par titre.\n";
     } else if (choix == 2) {
         sort(books.begin(), books.end(),
              [](const unique_ptr<Book>& a, const unique_ptr<Book>& b) {
                  return a->getAuthor() < b->getAuthor();
              });
-        cout << "✅ Livres triés par auteur avec succès.\n";
+        cout << "✅ Livres triés par auteur.\n";
     } else {
         cout << "Choix invalide.\n";
+        return;
     }
+
+    // Afficher immédiatement le résultat du tri
+    displayAllBooks();
 }
