@@ -32,6 +32,7 @@ void displayMenu() {
     cout << "11. Statistiques de la Bibliothèque\n";
     cout << "12. Sauvegarder les Données\n";
     cout << "13. Créer une Sauvegarde\n";
+    cout << "14. Trier les Livres\n";
     cout << "0.  Quitter\n";
     cout << "======================================================\n";
     cout << "Entrez votre choix : ";
@@ -48,7 +49,6 @@ int main() {
     Library library;
     FileManager fileManager;
     
-    // Load existing data
     cout << "Chargement des données de la bibliothèque...\n";
     fileManager.loadLibraryData(library);
     
@@ -68,7 +68,7 @@ int main() {
         cin.ignore(); // Clear newline from buffer
         
         switch (choice) {
-            case 1: { // Add Book
+            case 1: { // Ajouter un livre
                 string title = getInput("Entrez le titre du livre : ");
                 string author = getInput("Entrez l'auteur du livre : ");
                 string isbn = getInput("Entrez l'ISBN du livre : ");
@@ -84,25 +84,19 @@ int main() {
                 break;
             }
             
-            case 2: { // Remove Book
+            case 2: { // Supprimer un livre (confirmation gérée par Library)
                 string isbn = getInput("Entrez l'ISBN du livre à supprimer : ");
-                
-                if (library.removeBook(isbn)) {
-                    cout << "Livre supprimé avec succès !\n";
-                } else {
-                    cout << "Livre non trouvé.\n";
-                }
+                library.removeBook(isbn);
                 pauseForInput();
                 break;
             }
             
-            case 3: { // Search by Title
+            case 3: { // Rechercher par titre
                 string title = getInput("Entrez le titre à rechercher : ");
                 auto results = library.searchBooksByTitle(title);
                 
-                if (results.empty()) {
-                    cout << "Aucun livre trouvé avec ce titre.\n";
-                } else {
+                if (results.empty()) cout << "Aucun livre trouvé avec ce titre.\n";
+                else {
                     cout << "\n=== RÉSULTATS DE RECHERCHE ===\n";
                     for (size_t i = 0; i < results.size(); ++i) {
                         cout << "\nRésultat " << (i + 1) << " :\n";
@@ -114,13 +108,12 @@ int main() {
                 break;
             }
             
-            case 4: { // Search by Author
+            case 4: { // Rechercher par auteur
                 string author = getInput("Entrez l'auteur à rechercher : ");
                 auto results = library.searchBooksByAuthor(author);
                 
-                if (results.empty()) {
-                    cout << "Aucun livre trouvé de cet auteur.\n";
-                } else {
+                if (results.empty()) cout << "Aucun livre trouvé de cet auteur.\n";
+                else {
                     cout << "\n=== RÉSULTATS DE RECHERCHE ===\n";
                     for (size_t i = 0; i < results.size(); ++i) {
                         cout << "\nRésultat " << (i + 1) << " :\n";
@@ -132,17 +125,17 @@ int main() {
                 break;
             }
             
-            case 5: // Display All Books
+            case 5:
                 library.displayAllBooks();
                 pauseForInput();
                 break;
             
-            case 6: // Display Available Books
+            case 6:
                 library.displayAvailableBooks();
                 pauseForInput();
                 break;
             
-            case 7: { // Add User
+            case 7: { // Ajouter utilisateur
                 string name = getInput("Entrez le nom de l'utilisateur : ");
                 string userId = getInput("Entrez l'ID de l'utilisateur : ");
                 
@@ -157,37 +150,34 @@ int main() {
                 break;
             }
             
-            case 8: // Display All Users
+            case 8:
                 library.displayAllUsers();
                 pauseForInput();
                 break;
             
-            case 9: { // Check Out Book
+            case 9: { // Emprunter
                 string isbn = getInput("Entrez l'ISBN du livre à emprunter : ");
                 string userId = getInput("Entrez l'ID de l'utilisateur : ");
                 
-                if (library.checkOutBook(isbn, userId)) {
+                if (library.checkOutBook(isbn, userId))
                     cout << "Livre emprunté avec succès !\n";
-                } else {
-                    cout << "Erreur : Impossible d'emprunter le livre. Vérifiez l'ISBN, l'ID utilisateur et la disponibilité du livre.\n";
-                }
+                else
+                    cout << "Erreur : impossible d'emprunter le livre.\n";
                 pauseForInput();
                 break;
             }
             
-            case 10: { // Return Book
+            case 10: { // Retourner
                 string isbn = getInput("Entrez l'ISBN du livre à retourner : ");
-                
-                if (library.returnBook(isbn)) {
+                if (library.returnBook(isbn))
                     cout << "Livre retourné avec succès !\n";
-                } else {
-                    cout << "Erreur : Impossible de retourner le livre. Vérifiez l'ISBN et que le livre est bien emprunté.\n";
-                }
+                else
+                    cout << "Erreur : impossible de retourner le livre.\n";
                 pauseForInput();
                 break;
             }
             
-            case 11: { // Library Statistics
+            case 11: { // Statistiques
                 cout << "\n=== STATISTIQUES DE LA BIBLIOTHÈQUE ===\n";
                 cout << "Total des Livres : " << library.getTotalBooks() << "\n";
                 cout << "Livres Disponibles : " << library.getAvailableBookCount() << "\n";
@@ -197,23 +187,25 @@ int main() {
                 break;
             }
             
-            case 12: { // Save Data
-                if (fileManager.saveLibraryData(library)) {
-                    cout << "Données de la bibliothèque sauvegardées avec succès !\n";
-                } else {
-                    cout << "Erreur lors de la sauvegarde des données de la bibliothèque.\n";
-                }
+            case 12:
+                if (fileManager.saveLibraryData(library))
+                    cout << "Données sauvegardées avec succès.\n";
+                else
+                    cout << "Erreur lors de la sauvegarde.\n";
                 pauseForInput();
                 break;
-            }
             
-            case 13: { // Create Backup
+            case 13:
                 fileManager.createBackup();
                 pauseForInput();
                 break;
-            }
+
+            case 14:
+                library.sortBooks();
+                pauseForInput();
+                break;
             
-            case 0: // Exit
+            case 0:
                 cout << "Sauvegarde des données avant la fermeture...\n";
                 fileManager.saveLibraryData(library);
                 cout << "Merci d'avoir utilisé le Système de Gestion de Bibliothèque Personnelle !\n";
