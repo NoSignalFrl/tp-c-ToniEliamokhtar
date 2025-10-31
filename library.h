@@ -41,6 +41,9 @@ public:
     void displayAllBooks();
     void displayAvailableBooks();
     void displayAllUsers();
+
+    // 🔹 Nouvelle fonctionnalité : tri des livres
+    void sortBooks();
     
     // Statistics
     int getTotalBooks() const;
